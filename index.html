@@ -36,11 +36,21 @@
     position: fixed; inset: 0; width: 100%; height: 100%;
     background: transparent; pointer-events: none; z-index: 10;
   }
+
+  iframe {
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    z-index: -10;
+    pointer-events: auto;
+  }
 </style>
 </head>
 <body>
-  <h1>Happy birthday Tony!!</h1>
-  <button id="burst">MORE CONFETTI!!!</button>
+  <main>
+    <h1>Happy birthday Tony!!</h1>
+    <button id="burst">MORE CONFETTI!!!</button>
+  </main>
   <canvas id="confetti"></canvas>
 
   <iframe src="https://iemand005.github.io/FenixWeb/Cake/" frameborder="0"></iframe>

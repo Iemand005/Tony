@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Confetti</title>
+<style>
+  :root {
+    box-sizing: border-box;
+    --bg: #eef3f8; --ink: #14202e; --btn: #e8365d; --btn-ink: #fff;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg: #101a26; --ink: #e8eef5; --btn: #ff5c80; --btn-ink: #1a0610; }
+  }
+  :root[data-theme="dark"] { --bg: #101a26; --ink: #e8eef5; --btn: #ff5c80; --btn-ink: #1a0610; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
+    overflow: hidden;
+  }
+  p { margin: 0; opacity: .7; text-align: center; padding: 0 16px; }
+  button {
+    font: inherit; font-weight: 700; font-size: 1.1rem;
+    background: var(--btn); color: var(--btn-ink);
+    border: 0; border-radius: 999px; padding: 14px 32px; cursor: pointer;
+    transition: transform .08s;
+  }
+  button:active { transform: scale(.95); }
+  button:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+  /* Transparent canvas laid over everything; clicks pass through */
+  #confetti {
+    position: fixed; inset: 0; width: 100%; height: 100%;
+    background: transparent; pointer-events: none; z-index: 10;
+  }
+</style>
+</head>
+<body>
+  <p>The canvas is fully transparent, so the page shows through.</p>
+  <button id="burst">Pop confetti</button>
+  <canvas id="confetti"></canvas>
+
+<script>
+(function () {
+  var canvas = document.getElementById('confetti');
+  var ctx = canvas.getContext('2d');
+  var dpr = Math.min(window.devicePixelRatio || 1, 2);
+  var W = 0, H = 0, pieces = [], running = false;
+  var colors = ['#e8365d', '#ffb703', '#2ec4b6', '#3a86ff', '#8338ec', '#ffffff'];
+
+  function resize() {
+    W = window.innerWidth; H = window.innerHeight;
+    canvas.width = W * dpr; canvas.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  function rand(a, b) { return a + Math.random() * (b - a); }
+
+  function spawn(x, y, count) {
+    for (var i = 0; i < count; i++) {
+      var angle = rand(-Math.PI * 0.95, -Math.PI * 0.05); // upward fan
+      var speed = rand(6, 16);
+      pieces.push({
+        x: x, y: y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        w: rand(6, 12), h: rand(4, 7),
+        rot: rand(0, Math.PI * 2), vr: rand(-0.3, 0.3),
+        tilt: rand(0, Math.PI * 2), vt: rand(0.05, 0.2),
+        color: colors[(Math.random() * colors.length) | 0],
+        life: 0, max: rand(120, 200),
+        round: Math.random() < 0.25
+      });
+    }
+    if (!running) { running = true; requestAnimationFrame(tick); }
+  }
+
+  function tick() {
+    ctx.clearRect(0, 0, W, H);
+    for (var i = pieces.length - 1; i >= 0; i--) {
+      var p = pieces[i];
+      p.vy += 0.28; p.vx *= 0.985; p.vy *= 0.985;
+      p.x += p.vx; p.y += p.vy;
+      p.rot += p.vr; p.tilt += p.vt; p.life++;
+      if (p.life > p.max || p.y > H + 30) { pieces.splice(i, 1); continue; }
+      ctx.save();
+      ctx.globalAlpha = Math.min(1, (p.max - p.life) / 30);
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot);
+      ctx.scale(1, Math.cos(p.tilt)); // flutter
+      ctx.fillStyle = p.color;
+      if (p.round) { ctx.beginPath(); ctx.arc(0, 0, p.h / 1.5, 0, Math.PI * 2); ctx.fill(); }
+      else ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      ctx.restore();
+    }
+    if (pieces.length) requestAnimationFrame(tick);
+    else { running = false; ctx.clearRect(0, 0, W, H); }
+  }
+
+  document.getElementById('burst').addEventListener('click', function (e) {
+    var r = e.currentTarget.getBoundingClientRect();
+    spawn(r.left + r.width / 2, r.top + r.height / 2, 120);
+  });
+})();
+</script>
+</body>
+</html>

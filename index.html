@@ -102,10 +102,12 @@
     else { running = false; ctx.clearRect(0, 0, W, H); }
   }
 
-  document.getElementById('burst').addEventListener('click', function (e) {
+  function burst(e) {
     var r = e.currentTarget.getBoundingClientRect();
     spawn(r.left + r.width / 2, r.top + r.height / 2, 120);
-  });
+  }
+
+  document.getElementById('burst').addEventListener('click', burst);
 })();
 </script>
 </body>

@@ -72,7 +72,7 @@
 <body>
 	<main>
 		<h1>Happy birthday Tony!!</h1>
-		<button id="burst">MORE CONFETTI!!!</button>
+		<button id="burst">CONFETTI!!!</button>
 	</main>
 	<footer>Thank you for having been my friend!</footer>
 	<canvas id="confetti"></canvas>
@@ -145,7 +145,8 @@
 
 	document.getElementById('burst').addEventListener('click', burst);
 	
-	document.addEventListener("load", burst);
+	document.addEventListener("load", burst.bind(this, canvas));
+	burst(canvas)
 })();
 </script>
 </body>
